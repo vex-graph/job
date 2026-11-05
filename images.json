@@ -1,0 +1,39 @@
+{
+  "name": "vex",
+  "org": "vexgraph",
+  "version": "0.1.0",
+  "channels": [
+    "cutting-edge",
+    "beta",
+    "stable"
+  ],
+  "images": {
+    "core": [
+      "re",
+      "vexspoke",
+      "determinant",
+      "graphvex",
+      "language",
+      "samplerate",
+      "darling",
+      "harness",
+      "sesh",
+      "annotation",
+      "job"
+    ],
+    "app": [
+      "semicolon",
+      "primeagen",
+      "impedance",
+      "drawling",
+      "anti"
+    ],
+    "full": [
+      "semicolon",
+      "primeagen",
+      "impedance",
+      "drawling",
+      "anti"
+    ]
+  }
+}
