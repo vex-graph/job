@@ -1,0 +1,35 @@
+{
+  "application": {
+    "id": "org.vexgraph.job",
+    "name": "job",
+    "displayName": "Job",
+    "version": "0.1.0",
+    "type": "module",
+    "publisher": "vexgraph",
+    "description": "Update resolver: a channel document in, an update plan out",
+    "license": "MIT"
+  },
+  "build": {
+    "sources": [
+      "updates.c"
+    ],
+    "includes": [
+      "vexspoke"
+    ],
+    "dependencies": [],
+    "defines": [],
+    "options": [
+      "-Wall",
+      "-Wextra"
+    ],
+    "link": "module"
+  },
+  "payload": {
+    "files": []
+  },
+  "targets": {},
+  "formats": [
+    "portable"
+  ],
+  "statePolicy": "clean"
+}
