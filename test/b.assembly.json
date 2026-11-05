@@ -1,0 +1,39 @@
+{
+  "application": {
+    "id": "org.vexgraph.job.test",
+    "name": "updates_test",
+    "displayName": "Update Resolver Test",
+    "version": "0.1.0",
+    "type": "cli",
+    "publisher": "vexgraph",
+    "description": "The update finder against fixed channel documents",
+    "license": "MIT"
+  },
+  "build": {
+    "entry": "updates_test.c",
+    "sources": [
+      "updates_test.c",
+      "../updates.c",
+      "../../vexspoke/net/json.c"
+    ],
+    "includes": [
+      "job",
+      "vexspoke"
+    ],
+    "dependencies": [],
+    "defines": [],
+    "options": [
+      "-Wall",
+      "-Wextra"
+    ],
+    "link": "executable"
+  },
+  "payload": {
+    "files": []
+  },
+  "targets": {},
+  "formats": [
+    "portable"
+  ],
+  "statePolicy": "clean"
+}
