@@ -8,9 +8,9 @@ static int checks = 0;
 
 // Plans carry length-delimited views into the document (net/json.h keeps
 // unescaped strings in place), so equality is length plus bytes.
-static bool same(const char *view, uint32_t length, const char *expected)
+static bool same(const char *view, u32 length, const char *expected)
 {
-    return view != nullptr && length == (uint32_t) strlen(expected) &&
+    return view != nullptr && length == (u32) strlen(expected) &&
            strncmp(view, expected, length) == 0;
 }
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
         check(file != nullptr, "published channel opens");
         if (file != nullptr)
         {
-            size_t read = fread(liveDocument, 1, sizeof(liveDocument) - 1, file);
+            bytes read = fread(liveDocument, 1, sizeof(liveDocument) - 1, file);
             liveDocument[read] = '\0';
             fclose(file);
 

@@ -34,11 +34,11 @@ static const JsonRef UPDATE_NO_NODE = -1;
 // Reads up to four numeric segments. A suffix after the numbers ("1.4.0-beta")
 // is skipped, so a tag never decides an update; a missing segment reads as 0,
 // so "1.2" equals "1.2.0".
-static void UpdateStore_versionParts(const char *text, size_t length,
+static void UpdateStore_versionParts(const char *text, bytes length,
                                      unsigned long parts[UPDATE_VERSION_PARTS])
 {
-    size_t index = 0;
-    for (size_t part = 0; part < UPDATE_VERSION_PARTS; ++part)
+    bytes index = 0;
+    for (bytes part = 0; part < UPDATE_VERSION_PARTS; ++part)
     {
         unsigned long value = 0;
         while (index < length && text[index] >= '0' && text[index] <= '9')
@@ -55,7 +55,7 @@ static void UpdateStore_versionParts(const char *text, size_t length,
 }
 
 // Compares a document view against a caller's C string.
-static int UpdateStore_compareVersion(const char *left, size_t leftLength, const char *right)
+static int UpdateStore_compareVersion(const char *left, bytes leftLength, const char *right)
 {
     unsigned long a[UPDATE_VERSION_PARTS] = {0};
     unsigned long b[UPDATE_VERSION_PARTS] = {0};
@@ -65,7 +65,7 @@ static int UpdateStore_compareVersion(const char *left, size_t leftLength, const
     UpdateStore_versionParts(left, leftLength, a);
     UpdateStore_versionParts(right, strlen(right), b);
 
-    for (size_t part = 0; part < UPDATE_VERSION_PARTS; ++part)
+    for (bytes part = 0; part < UPDATE_VERSION_PARTS; ++part)
     {
         if (a[part] != b[part])
             return a[part] < b[part] ? -1 : 1;
@@ -115,8 +115,8 @@ static JsonRef UpdateStore_artifact(const UpdateStore *self, const UpdateRequest
     return Json_path(&(*self).document, Json_root(&(*self).document), path);
 }
 
-UpdateStore UpdateStore_4(JsonNode *nodes, uint32_t nodeCapacity,
-                          char *scratch, uint32_t scratchCapacity)
+UpdateStore UpdateStore_4(JsonNode *nodes, u32 nodeCapacity,
+                          char *scratch, u32 scratchCapacity)
 {
     UpdateStore store = {0};
     store.nodes = nodes;
@@ -174,7 +174,7 @@ UpdatePlan UpdateStore_resolve(const UpdateStore *self, const UpdateRequest *req
     plan.urlLength = url.length;
     plan.sha256 = sha256.data;
     plan.sha256Length = sha256.length;
-    plan.size = (uint64_t) Json_getNumber(document, Json_member(document, artifact, "size"), 0);
+    plan.size = (u64) Json_getNumber(document, Json_member(document, artifact, "size"), 0);
     return plan;
 }
 

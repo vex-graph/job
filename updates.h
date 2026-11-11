@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "c23/constructor.h"
+#include "util/constructor.h"
 #include "net/json.h"
 
 // Which artifact the caller is asking about. CORE and APP are hot-swappable
@@ -51,27 +51,27 @@ typedef struct UpdatePlan {
     UpdateKind kind;
     bool requiresRestart;
     const char *version;
-    uint32_t versionLength;
+    u32 versionLength;
     const char *url;
-    uint32_t urlLength;
+    u32 urlLength;
     const char *sha256;
-    uint32_t sha256Length;
-    uint64_t size;
+    u32 sha256Length;
+    u64 size;
 } UpdatePlan;
 
 // Caller-owned storage for one parsed document. No allocation of its own: the
 // node pool and scratch arena are the embedder's, sized for its channel class.
 typedef struct UpdateStore {
     JsonNode *nodes;
-    uint32_t nodeCapacity;
+    u32 nodeCapacity;
     char *scratch;
-    uint32_t scratchCapacity;
+    u32 scratchCapacity;
     JsonDoc document;
     bool parsed;
 } UpdateStore;
 
-UpdateStore UpdateStore_4(JsonNode *nodes, uint32_t nodeCapacity,
-                          char *scratch, uint32_t scratchCapacity);
+UpdateStore UpdateStore_4(JsonNode *nodes, u32 nodeCapacity,
+                          char *scratch, u32 scratchCapacity);
 #define UpdateStore(...) CONSTRUCTOR_DISPATCH(UpdateStore, __VA_ARGS__)
 #define UpdateStore_zero() UpdateStore_4(nullptr, 0, nullptr, 0)
 
