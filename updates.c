@@ -34,7 +34,7 @@ static const JsonRef UPDATE_NO_NODE = -1;
 // Reads up to four numeric segments. A suffix after the numbers ("1.4.0-beta")
 // is skipped, so a tag never decides an update; a missing segment reads as 0,
 // so "1.2" equals "1.2.0".
-static void UpdateStore_versionParts(const char *text, bytes length,
+static fn UpdateStore_versionParts(const char *text, bytes length,
                                      unsigned long parts[UPDATE_VERSION_PARTS])
 {
     bytes index = 0;

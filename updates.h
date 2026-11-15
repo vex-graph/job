@@ -9,11 +9,7 @@
 #ifndef JOB_UPDATES_H
 #define JOB_UPDATES_H
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include "util/constructor.h"
+#include "vex.h"
 #include "net/json.h"
 
 // Which artifact the caller is asking about. CORE and APP are hot-swappable

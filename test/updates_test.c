@@ -14,7 +14,7 @@ static bool same(const char *view, u32 length, const char *expected)
            strncmp(view, expected, length) == 0;
 }
 
-static void check(bool condition, const char *label)
+static fn check(bool condition, const char *label)
 {
     ++checks;
     if (!condition)
