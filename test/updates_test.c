@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-static int failures = 0;
-static int checks = 0;
+static i32 failures = 0;
+static i32 checks = 0;
 
 // Plans carry length-delimited views into the document (net/json.h keeps
 // unescaped strings in place), so equality is length plus bytes.
@@ -57,7 +57,7 @@ static UpdateRequest requestOf(UpdateKind kind, const char *current)
     return request;
 }
 
-int main(int argc, char **argv)
+i32 main(i32 argc, char **argv)
 {
     static JsonNode nodes[256];
     static char scratch[2048];

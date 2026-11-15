@@ -35,15 +35,15 @@ static const JsonRef UPDATE_NO_NODE = -1;
 // is skipped, so a tag never decides an update; a missing segment reads as 0,
 // so "1.2" equals "1.2.0".
 static fn UpdateStore_versionParts(const char *text, bytes length,
-                                     unsigned long parts[UPDATE_VERSION_PARTS])
+                                     u64 parts[UPDATE_VERSION_PARTS])
 {
     bytes index = 0;
     for (bytes part = 0; part < UPDATE_VERSION_PARTS; ++part)
     {
-        unsigned long value = 0;
+        u64 value = 0;
         while (index < length && text[index] >= '0' && text[index] <= '9')
         {
-            value = value * 10u + (unsigned long) (text[index] - '0');
+            value = value * 10u + (u64) (text[index] - '0');
             ++index;
         }
         parts[part] = value;
@@ -55,10 +55,10 @@ static fn UpdateStore_versionParts(const char *text, bytes length,
 }
 
 // Compares a document view against a caller's C string.
-static int UpdateStore_compareVersion(const char *left, bytes leftLength, const char *right)
+static i32 UpdateStore_compareVersion(const char *left, bytes leftLength, const char *right)
 {
-    unsigned long a[UPDATE_VERSION_PARTS] = {0};
-    unsigned long b[UPDATE_VERSION_PARTS] = {0};
+    u64 a[UPDATE_VERSION_PARTS] = {0};
+    u64 b[UPDATE_VERSION_PARTS] = {0};
     if (left == nullptr || right == nullptr)
         return 0;
 
