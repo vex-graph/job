@@ -1,3 +1,4 @@
+#include "vex.h"
 #include "job/updates.h"
 
 #include <stdio.h>

@@ -6,12 +6,12 @@
 // numeric per dot-separated segment, so "1.10.0" is newer than "1.9.9" and a
 // tag suffix never decides an update.
 
+#include "vex.h"
 #include "job/updates.h"
 
 #include <stdio.h>
 #include <string.h>
 
-#include "annotation/annotation.h"
 
 ;;DEFINITION
 /**
