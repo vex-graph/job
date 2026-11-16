@@ -31,6 +31,22 @@
 static const JsonRef UPDATE_NO_NODE = -1;
 #define UPDATE_VERSION_PARTS 4u
 
+static inline UpdateKind UpdateRequest_kind(const UpdateRequest *self) { return (*self).kind; }
+static inline const char *UpdateRequest_platform(const UpdateRequest *self) { return (*self).platform; }
+static inline const char *UpdateRequest_current(const UpdateRequest *self) { return (*self).current; }
+static inline const char *UpdateRequest_application(const UpdateRequest *self) { return (*self).application; }
+static inline const char *UpdateRequest_format(const UpdateRequest *self) { return (*self).format; }
+
+static inline JsonNode *UpdateStore_nodes(const UpdateStore *self) { return (*self).nodes; }
+static inline u32 UpdateStore_nodeCapacity(const UpdateStore *self) { return (*self).nodeCapacity; }
+static inline char *UpdateStore_scratch(const UpdateStore *self) { return (*self).scratch; }
+static inline u32 UpdateStore_scratchCapacity(const UpdateStore *self) { return (*self).scratchCapacity; }
+static inline const JsonDoc *UpdateStore_document(const UpdateStore *self) { return &(*self).document; }
+static inline bool UpdateStore_parsed(const UpdateStore *self) { return (*self).parsed; }
+
+static inline fn UpdateStore_setDocument(UpdateStore *self, JsonDoc document) { (*self).document = document; }
+static inline fn UpdateStore_setParsed(UpdateStore *self, bool parsed) { (*self).parsed = parsed; }
+
 // Reads up to four numeric segments. A suffix after the numbers ("1.4.0-beta")
 // is skipped, so a tag never decides an update; a missing segment reads as 0,
 // so "1.2" equals "1.2.0".
@@ -90,29 +106,32 @@ static const char *UpdateStore_defaultFormat(const char *platform)
 static JsonRef UpdateStore_artifact(const UpdateStore *self, const UpdateRequest *request)
 {
     char path[192];
-    switch ((*request).kind)
+    switch (UpdateRequest_kind(request))
     {
         case UPDATE_KIND_CORE:
-            snprintf(path, sizeof(path), "core.%s", (*request).platform);
+            snprintf(path, sizeof(path), "core.%s", UpdateRequest_platform(request));
             break;
         case UPDATE_KIND_APP:
-            snprintf(path, sizeof(path), "app.%s", (*request).platform);
+            snprintf(path, sizeof(path), "app.%s", UpdateRequest_platform(request));
             break;
         case UPDATE_KIND_FULL:
         {
-            if ((*request).application == nullptr)
+            const char *application = UpdateRequest_application(request);
+            if (application == nullptr)
                 return UPDATE_NO_NODE;
-            const char *format = (*request).format != nullptr
-                                     ? (*request).format
-                                     : UpdateStore_defaultFormat((*request).platform);
+            const char *platform = UpdateRequest_platform(request);
+            const char *format = UpdateRequest_format(request) != nullptr
+                                     ? UpdateRequest_format(request)
+                                     : UpdateStore_defaultFormat(platform);
             snprintf(path, sizeof(path), "applications.%s.%s.%s",
-                     (*request).application, (*request).platform, format);
+                     application, platform, format);
             break;
         }
         default:
             return UPDATE_NO_NODE;
     }
-    return Json_path(&(*self).document, Json_root(&(*self).document), path);
+    const JsonDoc *document = UpdateStore_document(self);
+    return Json_path(document, Json_root(document), path);
 }
 
 UpdateStore UpdateStore_4(JsonNode *nodes, u32 nodeCapacity,
@@ -129,32 +148,33 @@ UpdateStore UpdateStore_4(JsonNode *nodes, u32 nodeCapacity,
 
 bool UpdateStore_parse(UpdateStore *self, const char *text)
 {
-    (*self).parsed = false;
-    if (text == nullptr || (*self).nodes == nullptr || (*self).nodeCapacity == 0)
+    UpdateStore_setParsed(self, false);
+    if (text == nullptr || UpdateStore_nodes(self) == nullptr || UpdateStore_nodeCapacity(self) == 0)
         return false;
 
     JsonDoc document = {0};
-    bool ok = Json_parse(&document, (*self).nodes, (*self).nodeCapacity,
-                         (*self).scratch, (*self).scratchCapacity, text);
-    (*self).document = document;
-    (*self).parsed = ok;
+    bool ok = Json_parse(&document, UpdateStore_nodes(self), UpdateStore_nodeCapacity(self),
+                         UpdateStore_scratch(self), UpdateStore_scratchCapacity(self), text);
+    UpdateStore_setDocument(self, document);
+    UpdateStore_setParsed(self, ok);
     return ok;
 }
 
 UpdatePlan UpdateStore_resolve(const UpdateStore *self, const UpdateRequest *request)
 {
     UpdatePlan plan = {0};
-    if (request == nullptr || !(*self).parsed)
+    if (request == nullptr || !UpdateStore_parsed(self))
         return plan;
 
-    plan.kind = (*request).kind;
-    plan.requiresRestart = (*request).kind == UPDATE_KIND_FULL;
+    UpdateKind kind = UpdateRequest_kind(request);
+    plan.kind = kind;
+    plan.requiresRestart = kind == UPDATE_KIND_FULL;
 
     JsonRef artifact = UpdateStore_artifact(self, request);
     if (artifact == UPDATE_NO_NODE)
         return plan;
 
-    const JsonDoc *document = &(*self).document;
+    const JsonDoc *document = UpdateStore_document(self);
     JsonStringView version = Json_getString(document, Json_member(document, artifact, "version"));
     JsonStringView url = Json_getString(document, Json_member(document, artifact, "url"));
     JsonStringView sha256 = Json_getString(document, Json_member(document, artifact, "sha256"));
@@ -163,8 +183,9 @@ UpdatePlan UpdateStore_resolve(const UpdateStore *self, const UpdateRequest *req
 
     // A first install always has something to do; an installed client only
     // moves forward.
-    if ((*request).current != nullptr &&
-        UpdateStore_compareVersion(version.data, version.length, (*request).current) <= 0)
+    const char *current = UpdateRequest_current(request);
+    if (current != nullptr &&
+        UpdateStore_compareVersion(version.data, version.length, current) <= 0)
         return plan;
 
     plan.available = true;
