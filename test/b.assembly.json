@@ -14,11 +14,20 @@
     "sources": [
       "updates_test.c",
       "../updates.c",
-      "../../vexspoke/net/json.c"
+      "../nio/job_memory.c",
+      "../../vexspoke/net/json.c",
+      "../../vexspoke/nio/vexspoke_memory.c",
+      "../../re/primitive/vex-string.c",
+      "../../re/nio/mem.c",
+      "../../re/nio/pool.c",
+      "../../re/nio/arena.c",
+      "../../re/nio/transient.c",
+      "../../re/atomic/spin_lock.c"
     ],
     "includes": [
       "job",
-      "vexspoke"
+      "vexspoke",
+      "re"
     ],
     "dependencies": [],
     "defines": [],

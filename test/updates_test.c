@@ -1,4 +1,5 @@
 #include "vex.h"
+#include "re/primitive/vex-string.h"
 #include "job/updates.h"
 
 #include <stdio.h>
@@ -7,25 +8,27 @@
 static i32 failures = 0;
 static i32 checks = 0;
 
-// Plans carry length-delimited views into the document (net/json.h keeps
-// unescaped strings in place), so equality is length plus bytes.
-static bool same(const char *view, u32 length, const char *expected)
+/**
+ * Plans carry length-delimited views into the document (net/json.h keeps
+ * unescaped strings in place), so equality is length plus bytes.
+ */
+static bool same(string view, u32 length, string expected)
 {
     return view != nullptr && length == (u32) strlen(expected) &&
-           strncmp(view, expected, length) == 0;
+           string_startsWith(view, expected, length);
 }
 
-static fn check(bool condition, const char *label)
+static fn check(bool condition, string label)
 {
     ++checks;
     if (!condition)
     {
-        printf("FAIL %s\n", label);
+        print("FAIL ", label);
         ++failures;
     }
 }
 
-static const char *DOCUMENT =
+static string DOCUMENT =
     "{"
     "  \"channel\": \"stable\","
     "  \"release\": \"1.4.0\","
@@ -47,7 +50,7 @@ static const char *DOCUMENT =
     "  }"
     "}";
 
-static UpdateRequest requestOf(UpdateKind kind, const char *current)
+static UpdateRequest requestOf(UpdateKind kind, string current)
 {
     UpdateRequest request = {0};
     request.kind = kind;
@@ -57,10 +60,10 @@ static UpdateRequest requestOf(UpdateKind kind, const char *current)
     return request;
 }
 
-i32 main(i32 argc, char **argv)
+i32 main(i32 argc, utf8 **argv)
 {
     static JsonNode nodes[256];
-    static char scratch[2048];
+    static utf8 scratch[2048];
 
     UpdateStore store = UpdateStore(nodes, 256, scratch, 2048);
     check(UpdateStore_parse(&store, DOCUMENT), "parses a channel document");
@@ -93,7 +96,7 @@ i32 main(i32 argc, char **argv)
     check(fullPlan.requiresRestart, "a full application needs a restart");
     check(same(fullPlan.version, fullPlan.versionLength, "1.4.0"), "full version");
     check(fullPlan.url != nullptr &&
-              strstr(fullPlan.url, "semicolon.app.zip") != nullptr,
+              string_contains(fullPlan.url, "semicolon.app.zip"),
           "darwin defaults to the .app archive");
 
     UpdateRequest missing = requestOf(UPDATE_KIND_FULL, "1.3.0");
@@ -104,13 +107,11 @@ i32 main(i32 argc, char **argv)
     check(!UpdateStore_parse(&empty, ""), "an empty document fails closed");
     check(!UpdateStore_resolve(&empty, &core).available, "an unparsed store offers nothing");
 
-    check(strcmp(UpdateKind_title(UPDATE_KIND_FULL), "full") == 0, "kind title");
+    check(string_equals(UpdateKind_title(UPDATE_KIND_FULL), "full"), "kind title");
 
-    // Integration: the document publish.py produced must resolve here, or the
-    // C finder and the Python publisher have drifted.
     if (argc > 1)
     {
-        static char liveDocument[8192];
+        static utf8 liveDocument[8192];
         FILE *file = fopen(argv[1], "rb");
         check(file != nullptr, "published channel opens");
         if (file != nullptr)
@@ -120,7 +121,7 @@ i32 main(i32 argc, char **argv)
             fclose(file);
 
             static JsonNode liveNodes[512];
-            static char liveScratch[4096];
+            static utf8 liveScratch[4096];
             UpdateStore live = UpdateStore(liveNodes, 512, liveScratch, 4096);
             check(UpdateStore_parse(&live, liveDocument), "published channel parses");
 
@@ -136,9 +137,9 @@ i32 main(i32 argc, char **argv)
 
     if (failures == 0)
     {
-        printf("job/updates: %d checks passed\n", checks);
+        print("job/updates: ", checks, " checks passed");
         return 0;
     }
-    printf("job/updates: %d of %d check(s) failed\n", failures, checks);
+    print("job/updates: ", failures, " of ", checks, " check(s) failed");
     return 1;
 }
